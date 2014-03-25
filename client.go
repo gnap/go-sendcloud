@@ -19,6 +19,7 @@ type Client struct {
 		api_user string
 		api_key  string
 	}
+    logger ErrorLogger
 }
 
 func New() *Client {
@@ -26,7 +27,8 @@ func New() *Client {
 		api_user string
 		api_key  string
 	})
-	return &Client{domains: d}
+	l := FmtErrorLogger{}
+	return &Client{domains: d, logger: l}
 }
 
 // add a sending domain with its authentication info
@@ -35,6 +37,10 @@ func (c *Client) AddDomain(domain, api_user, api_key string) {
 		api_user string
 		api_key  string
 	}{api_user, api_key}
+}
+
+func (c *Client) SetLogger(l ErrorLogger) {
+	c.logger = l
 }
 
 // invoke the remote API
@@ -56,7 +62,9 @@ func (c *Client) do(target, domain string, data url.Values) (body []byte, err er
 		return
 	}
 	if rsp.StatusCode != 200 {
-		err = fmt.Errorf("SendCloud error: %d %s", rsp.StatusCode, body)
+		//err = fmt.Errorf("SendCloud error: %d %s", rsp.StatusCode, body)
+        msg := string(body[:])
+		err = c.logger.ErrorLog("SendCloud SMTP", rsp.StatusCode, msg)
 	}
 	return
 }
