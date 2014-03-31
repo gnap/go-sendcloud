@@ -71,10 +71,10 @@ func (c *Client) Send(m Mail) (id string, err error) {
 	if reply.Msg != "success" {
 		if len(reply.Errs) > 0 {
 			//err = fmt.Errorf("SendCloud error: %s", reply.Errs[0])
-			err = c.logger.ErrorLog("SendCloud WebAPI", 0, reply.Errs[0])
+			err = c.logger.ErrorLog("sendcloud.error", 0, reply.Errs[0])
 		} else {
 			//err = fmt.Errorf("SendCloud error: unknown")
-			err = c.logger.ErrorLog("SendCloud WebAPI", 0, "unknown")
+			err = c.logger.ErrorLog("sendcloud.error", 0, "unknown")
 		}
 		return
 	}
