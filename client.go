@@ -66,6 +66,6 @@ func (c *Client) do(target, domain string, data url.Values) (body []byte, err er
 	}
 	//err = fmt.Errorf("SendCloud error: %d %s", rsp.StatusCode, body)
 	msg := string(body[:])
-	err = c.logger.ErrorLog("sendcloud.error", rsp.StatusCode, msg)
+	go c.logger.ErrorLog("sendcloud.error", rsp.StatusCode, msg)
 	return
 }
