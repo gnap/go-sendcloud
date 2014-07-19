@@ -13,7 +13,7 @@ import (
 
 const (
 	API_ENDPOINT = "https://sendcloud.sohu.com/webapi/"
-	HTTP_TIMEOUT = 5 * time.Second
+	HTTP_TIMEOUT = 10 * time.Second
 )
 
 type Client struct {
@@ -31,7 +31,8 @@ func New() *Client {
 		api_key  string
 	})
 	l := FmtErrorLogger{}
-	return &Client{domains: d, logger: l, httpClient: &http.Client{Timeout: time.Duration(HTTP_TIMEOUT)}}
+	tr := &http.Transport{MaxIdleConnsPerHost: 10}
+	return &Client{domains: d, logger: l, httpClient: &http.Client{Transport: tr, Timeout: time.Duration(HTTP_TIMEOUT)}}
 }
 
 // add a sending domain with its authentication info
