@@ -6,6 +6,7 @@ package sendcloud
 import (
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/url"
 	"time"
@@ -56,7 +57,16 @@ func (c *Client) do(target, domain string, data url.Values) (body []byte, err er
 	}
 	data.Add("api_user", s.api_user)
 	data.Add("api_key", s.api_key)
-	rsp, err := c.httpClient.PostForm(url, data)
+	tr := &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		Dial: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+		}).Dial,
+		TLSHandshakeTimeout: 30 * time.Second,
+	}
+	client := &http.Client{Transport: tr}
+	rsp, err := client.PostForm(url, data)
 	if err != nil {
 		return
 	}
