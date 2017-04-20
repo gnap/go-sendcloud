@@ -3,10 +3,10 @@ package sendcloud
 import (
 	"crypto/hmac"
 	"crypto/sha256"
-	"crypto/subtle"
 	"encoding/hex"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -56,8 +56,13 @@ func (wh *Webhook) Handle(w http.ResponseWriter, req *http.Request) (evt *Event,
 	}
 
 	ts := req.Form.Get("timestamp")
-	if !wh.Verify(ts, req.Form.Get("token"), req.Form.Get("signature")) {
+	token := req.Form.Get("token")
+	signature := req.Form.Get("signature")
+	calcSig := wh.Signature(ts, token)
+	if calcSig != signature {
 		err = ErrBadSignature
+		log.Printf("ERROR signature mismatch ts:%s, token:%s, sign:%s, calcSig:%s",
+			ts, token, signature, calcSig)
 		http.Error(w, "bad signature", http.StatusForbidden)
 		return
 	}
@@ -78,17 +83,10 @@ func (wh *Webhook) Handle(w http.ResponseWriter, req *http.Request) (evt *Event,
 	return
 }
 
-func (wh *Webhook) Verify(timestamp, token, signature string) bool {
+func (wh *Webhook) Signature(timestamp, token string) (calcSig string) {
 	h := hmac.New(sha256.New, []byte(wh.key))
 	io.WriteString(h, timestamp)
 	io.WriteString(h, token)
-	calcSig := h.Sum(nil)
-	sig, err := hex.DecodeString(signature)
-	if err != nil {
-		return false
-	}
-	if len(sig) != len(calcSig) {
-		return false
-	}
-	return subtle.ConstantTimeCompare(sig, calcSig) == 1
+	calcSig = hex.EncodeToString(h.Sum(nil))
+	return
 }
