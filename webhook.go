@@ -55,17 +55,11 @@ func (wh *Webhook) Handle(w http.ResponseWriter, req *http.Request) (evt *Event,
 		return
 	}
 
-	signature := req.Form.Get("signature")
-
-	if signature == "" {
-		// dont validate event unless it is not signed
-		evt = &Event{}
-		return
-	}
 	ts := req.Form.Get("timestamp")
 	token := req.Form.Get("token")
+	signature := req.Form.Get("signature")
 	calcSig := wh.Signature(ts, token)
-	if signature != "" && calcSig != signature {
+	if calcSig != signature {
 		err = ErrBadSignature
 		log.Printf("ERROR signature mismatch ts:%s, token:%s, sign:%s, calcSig:%s",
 			ts, token, signature, calcSig)
