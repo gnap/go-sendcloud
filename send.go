@@ -47,8 +47,11 @@ func (c *Client) Send(m Mail) (id string, err error) {
 		d.Add("replyto", replyto)
 	}
 	d.Add("subject", m.Subject())
-	d.Add("html", m.Html())
-	d.Add("plain", m.Text())
+	if m.Html() != "" {
+		d.Add("html", m.Html())
+	} else {
+		d.Add("html", m.Text())
+	}
 
 	headers := m.Headers()
 	if headers != nil {
