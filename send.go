@@ -16,6 +16,7 @@ type Mail interface {
 	ReplyTo() string // reply-to address
 	Subject() string
 	Html() string               // HTML mail body
+	Text() string               // plain text mail body
 	Headers() map[string]string // extra mail headers
 }
 
@@ -47,6 +48,7 @@ func (c *Client) Send(m Mail) (id string, err error) {
 	}
 	d.Add("subject", m.Subject())
 	d.Add("html", m.Html())
+	d.Add("plain", m.Text())
 
 	headers := m.Headers()
 	if headers != nil {
